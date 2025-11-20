@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Flashcards desde Excel</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+    :root {
+        --bg: #f2f2f2;
+        --card-front: white;
+        --card-back: #ffe680;
+        --text: #000;
+    }
+
+    body.dark {
+        --bg: #1e1e1e;
+        --card-front: #2c2c2c;
+        --card-back: #444;
+        --text: #eee;
+    }
+
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        transition: 0.3s;
+    }
+
+    h1 { margin-bottom: 20px; }
+
+    #flashcard {
+        width: 380px;
+        height: 240px;
+        perspective: 1000px;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+
+    .card-inner {
+        width: 100%;
+        height: 100%;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        position: relative;
+    }
+
+    .flip { transform: rotateY(180deg); }
+
+    .card-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        font-size: 20px;
+        backface-visibility: hidden;
+        background: var(--card-front);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        color: var(--text);
+    }
+
+    .back {
+        background: var(--card-back);
+        transform: rotateY(180deg);
+    }
+
+    .nav-btn {
+        font-size: 35px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        margin: 0 25px;
+        color: var(--text);
+        transition: 0.2s;
+    }
+
+    .nav-btn:hover {
+        transform: scale(1.3);
+    }
+
+    #controls {
+        margin-top: 20px;
+        display:flex;
+        align-items:center;
+    }
+
+    #counter {
+        margin-top: 15px;
+        font-size: 18px;
+    }
+
+    #themeToggle {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: #333;
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+    }
+
+</style>
+</head>
+
+<body>
+
+<button id="themeToggle">Modo Oscuro</button>
+
+<h1>Flashcards desde Excel</h1>
+
+<input type="file" id="excelFile" accept=".xlsx,.xls">
+
+<div id="flashcard">
+    <div class="card-inner" id="cardInner">
+        <div class="card-face front" id="frontText">Cargue un archivo Excel</div>
+        <div class="card-face back" id="backText">Respuesta</div>
+    </div>
+</div>
+
+<div id="counter">0 / 0</div>
+
+<div id="controls">
+    <button class="nav-btn" onclick="prevCard()">⟵</button>
+    <button class="nav-btn" onclick="nextCard()">⟶</button>
+</div>
+
+<script>
+let cards = [];
+let index = 0;
+
+// -------------------------
+// MODO OSCURO
+// -------------------------
+document.getElementById("themeToggle").addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+
+    const btn = document.getElementById("themeToggle");
+    btn.textContent = document.body.classList.contains("dark")
+        ? "Modo Claro"
+        : "Modo Oscuro";
+
+    localStorage.setItem("themeDark", document.body.classList.contains("dark"));
+});
+
+if (localStorage.getItem("themeDark") === "true") {
+    document.body.classList.add("dark");
+    document.getElementById("themeToggle").textContent = "Modo Claro";
+}
+
+// -------------------------
+// LEER EXCEL
+// -------------------------
+document.getElementById("excelFile").addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data);
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        cards = [];
+
+        // Primera fila contiene encabezados
+        for (let i = 1; i < rows.length; i++) {
+            if (rows[i][0] && rows[i][1]) {
+                cards.push({
+                    preguntas: rows[i][0],
+                    respuesta: rows[i][1]
+                });
+            }
+        }
+
+        index = 0;
+        updateCard();
+
+    } catch (err) {
+        alert("Error al leer el archivo");
+        console.error(err);
+    }
+});
+
+// -------------------------
+// ACTUALIZAR TARJETA Y CONTADOR
+// -------------------------
+function updateCard() {
+    const counter = document.getElementById("counter");
+
+    if (!cards || cards.length === 0) {
+        document.getElementById("frontText").textContent = "No hay tarjetas";
+        document.getElementById("backText").textContent = "—";
+        counter.textContent = "0 / 0";
+        return;
+    }
+
+    document.getElementById("frontText").textContent = cards[index].preguntas;
+    document.getElementById("backText").textContent = cards[index].respuesta;
+
+    document.getElementById("cardInner").classList.remove("flip");
+
+    counter.textContent = `${index + 1} / ${cards.length}`;
+}
+
+// -------------------------
+// NAVEGACIÓN
+// -------------------------
+function nextCard() {
+    if (cards.length === 0) return;
+    index = (index + 1) % cards.length;
+    updateCard();
+}
+
+function prevCard() {
+    if (cards.length === 0) return;
+    index = (index - 1 + cards.length) % cards.length;
+    updateCard();
+}
+
+// -------------------------
+// VOLTEAR TARJETA
+// -------------------------
+document.getElementById("flashcard").addEventListener("click", () => {
+    document.getElementById("cardInner").classList.toggle("flip");
+});
+</script>
+
+</body>
+</html>

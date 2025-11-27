@@ -1,272 +1,58 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Flashcards desde Excel</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-
-<style>
-    :root {
-        --bg: #f4f6fb;
-        --card-front: #ffffff;
-        --card-back: #4e73df;
-        --text: #1a1a1a;
-        --accent: #4e73df;
-    }
-
-    body.dark {
-        --bg: #1c1e26;
-        --card-front: #2a2d37;
-        --card-back: #596bff;
-        --text: #f0f0f0;
-        --accent: #596bff;
-    }
-
-    body {
-        background: var(--bg);
-        color: var(--text);
-        font-family: "Poppins", sans-serif;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-        transition: background 0.3s, color 0.3s;
-    }
-
-    header {
-        width: 100%;
-        text-align: center;
-        margin-bottom: 25px;
-    }
-
-    h1 {
-        font-weight: 600;
-        margin: 0;
-    }
-
-    #themeToggle {
-        position: fixed;
-        top: 15px;
-        right: 15px;
-        background: var(--accent);
-        color: #fff;
-        padding: 8px 14px;
-        border-radius: 20px;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
-        transition: 0.3s;
-    }
-    #themeToggle:hover {
-        opacity: 0.85;
-    }
-
-    input[type="file"] {
-        margin: 15px 0;
-        padding: 10px;
-        border-radius: 8px;
-        border: 2px solid var(--accent);
-        background: var(--card-front);
-        cursor: pointer;
-        font-weight: 500;
-    }
-
-    #flashcard {
-        width: 400px;
-        height: 250px;
-        perspective: 1200px;
-        cursor: pointer;
-        margin-top: 20px;
-    }
-
-    .card-inner {
-        width: 100%;
-        height: 100%;
-        transition: transform 0.8s ease;
-        transform-style: preserve-3d;
-        position: relative;
-    }
-
-    .flip {
-        transform: rotateY(180deg);
-    }
-
-    .card-face {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border-radius: 15px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        font-size: 20px;
-        backface-visibility: hidden;
-        background: var(--card-front);
-        box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-        color: var(--text);
-    }
-
-    .back {
-        background: var(--card-back);
-        color: #fff;
-        transform: rotateY(180deg);
-    }
-
-    #counter {
-        margin-top: 15px;
-        font-size: 18px;
-        font-weight: 600;
-    }
-
-    #controls {
-        margin-top: 20px;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-    }
-
-    .nav-btn {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        border: none;
-        background: var(--accent);
-        color: #fff;
-        font-size: 24px;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-    .nav-btn:hover {
-        transform: scale(1.1);
-        opacity: 0.9;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards con Login</title>
+    
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/906/906310.png " type="image/png">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-<button id="themeToggle">Modo Oscuro</button>
-
-<header>
-    <h1>📘 Flashcards desde Excel</h1>
-</header>
-
-<input type="file" id="excelFile" accept=".xlsx,.xls">
-
-<div id="flashcard">
-    <div class="card-inner" id="cardInner">
-        <div class="card-face front" id="frontText">Cargue un archivo Excel</div>
-        <div class="card-face back" id="backText">Respuesta</div>
+    <div id="loginContainer">
+        <div class="login-box">
+            <h2>🔐 Acceso</h2>
+            <p>Ingresa tu contraseña para estudiar</p>
+            <input type="password" id="passwordInput" placeholder="Contraseña...">
+            <button id="loginBtn">Entrar</button>
+            <p id="loginError" style="color: var(--danger); display: none; margin-top: 10px;">Contraseña incorrecta</p>
+        </div>
     </div>
-</div>
 
-<div id="counter">0 / 0</div>
+    <div id="appContainer" class="hidden">
+        
+        <button id="themeToggle">Modo Oscuro</button>
+        <button id="logoutBtn" style="position: fixed; top: 15px; left: 15px; background: var(--danger); border: none; color: white; padding: 8px 14px; border-radius: 20px; cursor: pointer; font-weight: 600; z-index: 10;">Salir</button>
 
-<div id="controls">
-    <button class="nav-btn" onclick="prevCard()">⟵</button>
-    <button class="nav-btn" onclick="nextCard()">⟶</button>
-</div>
+        <header>
+            <h1>📘 Flashcards Excel</h1>
+        </header>
 
-<script>
-let cards = [];
-let index = 0;
+        <input type="file" id="excelFile" accept=".xlsx,.xls">
+        
+        <div id="flashcard">
+             <div class="card-inner" id="cardInner">
+                <div class="card-face front" id="frontText">Cargue un archivo Excel</div>
+                <div class="card-face back" id="backText">Respuesta</div>
+            </div>
+        </div>
+        
+        <div id="counter">0 / 0</div>
+        
+        <div id="controls">
+             <button class="nav-btn" onclick="prevCard()">⟵</button>
+             <button class="nav-btn" onclick="nextCard()">⟶</button>
+        </div>
+    
+    </div>
 
-// -------------------------
-// MODO OSCURO
-// -------------------------
-document.getElementById("themeToggle").addEventListener("click", () => {
-    document.body.classList.toggle("dark");
-    const btn = document.getElementById("themeToggle");
-    btn.textContent = document.body.classList.contains("dark")
-        ? "Modo Claro"
-        : "Modo Oscuro";
-    localStorage.setItem("themeDark", document.body.classList.contains("dark"));
-});
-
-if (localStorage.getItem("themeDark") === "true") {
-    document.body.classList.add("dark");
-    document.getElementById("themeToggle").textContent = "Modo Claro";
-}
-
-// -------------------------
-// LEER EXCEL
-// -------------------------
-document.getElementById("excelFile").addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    try {
-        const data = await file.arrayBuffer();
-        const workbook = XLSX.read(data);
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-        cards = [];
-
-        for (let i = 1; i < rows.length; i++) {
-            if (rows[i][0] && rows[i][1]) {
-                cards.push({
-                    preguntas: rows[i][0],
-                    respuesta: rows[i][1]
-                });
-            }
-        }
-
-        index = 0;
-        updateCard();
-
-    } catch (err) {
-        alert("Error al leer el archivo");
-        console.error(err);
-    }
-});
-
-// -------------------------
-// ACTUALIZAR TARJETA Y CONTADOR
-// -------------------------
-function updateCard() {
-    const counter = document.getElementById("counter");
-
-    if (!cards || cards.length === 0) {
-        document.getElementById("frontText").textContent = "No hay tarjetas";
-        document.getElementById("backText").textContent = "—";
-        counter.textContent = "0 / 0";
-        return;
-    }
-
-    document.getElementById("frontText").textContent = cards[index].preguntas;
-    document.getElementById("backText").textContent = cards[index].respuesta;
-
-    document.getElementById("cardInner").classList.remove("flip");
-
-    counter.textContent = `${index + 1} / ${cards.length}`;
-}
-
-// -------------------------
-// NAVEGACIÓN
-// -------------------------
-function nextCard() {
-    if (cards.length === 0) return;
-    index = (index + 1) % cards.length;
-    updateCard();
-}
-
-function prevCard() {
-    if (cards.length === 0) return;
-    index = (index - 1 + cards.length) % cards.length;
-    updateCard();
-}
-
-// -------------------------
-// VOLTEAR TARJETA
-// -------------------------
-document.getElementById("flashcard").addEventListener("click", () => {
-    document.getElementById("cardInner").classList.toggle("flip");
-});
-</script>
-
+    <script src="js/script.js"></script>
 </body>
 </html>
-

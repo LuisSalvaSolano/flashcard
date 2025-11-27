@@ -1,0 +1,308 @@
+/* =========================================
+   VARIABLES Y TEMA
+   ========================================= */
+:root {
+    --bg: #f4f6fb;
+    --card-front: #ffffff;
+    --card-back: #4e73df;
+    --text: #1a1a1a;
+    --accent: #4e73df;
+    --danger: #e74a3b;
+}
+
+body.dark {
+    --bg: #1c1e26;
+    --card-front: #2a2d37;
+    --card-back: #596bff;
+    --text: #f0f0f0;
+    --accent: #596bff;
+}
+
+/* =========================================
+   ESTILOS GENERALES
+   ========================================= */
+* {
+    box-sizing: border-box; /* Crucial para responsive: incluye padding en el ancho total */
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Poppins", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh; /* Asegura que cubra toda la pantalla */
+    margin: 0;
+    padding: 20px;
+    transition: background 0.3s, color 0.3s;
+}
+
+header {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-weight: 600;
+    margin: 0;
+    font-size: 1.8rem; /* Tamaño relativo */
+}
+
+/* =========================================
+   BOTÓN MODO OSCURO
+   ========================================= */
+#themeToggle {
+    position: absolute; /* Cambiado de fixed a absolute para que no tape contenido al hacer scroll */
+    top: 20px;
+    right: 20px;
+    background: var(--accent);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+    transition: 0.3s;
+    z-index: 10;
+}
+
+#themeToggle:hover {
+    opacity: 0.85;
+    transform: scale(1.05);
+}
+
+/* =========================================
+   INPUT DE ARCHIVO
+   ========================================= */
+input[type="file"] {
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid var(--accent);
+    background: var(--card-front);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 500;
+    max-width: 100%; /* Evita que se salga de la pantalla en móviles */
+    font-size: 0.9rem;
+}
+
+/* =========================================
+   CONTENEDOR DE LA TARJETA (ESCENARIO 3D)
+   ========================================= */
+#flashcard {
+    width: 100%;           
+    max-width: 500px;      /* Un poco más ancho en escritorio */
+    height: 300px;         /* Altura fija para consistencia */
+    perspective: 1200px;   
+    cursor: pointer;
+    margin-top: 10px;
+    position: relative;
+}
+
+.card-inner {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); /* Animación más suave */
+    transform-style: preserve-3d;
+    position: relative;
+}
+
+.flip {
+    transform: rotateY(180deg);
+}
+
+/* =========================================
+   CARAS DE LA TARJETA
+   ========================================= */
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+    font-size: 1.3rem;
+    backface-visibility: hidden;
+    background: var(--card-front);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* Sombra más elegante */
+    color: var(--text);
+    text-align: center;
+    
+    /* MEJORA IMPORTANTE: Scroll si el texto es muy largo */
+    overflow-y: auto; 
+    word-wrap: break-word;
+}
+
+/* Personalizar barra de scroll dentro de la tarjeta (Chrome/Safari) */
+.card-face::-webkit-scrollbar {
+    width: 6px;
+}
+.card-face::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 4px;
+}
+
+.back {
+    background: var(--card-back);
+    color: #fff;
+    transform: rotateY(180deg);
+}
+
+/* =========================================
+   CONTROLES E INDICADORES
+   ========================================= */
+#counter {
+    margin-top: 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    opacity: 0.8;
+}
+
+#controls {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px; /* Más espacio entre botones */
+    padding-bottom: 20px; /* Espacio al final para móviles */
+}
+
+.nav-btn {
+    width: 60px;  /* Botones más grandes para dedos (touch friendly) */
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.nav-btn:active {
+    transform: scale(0.95); /* Efecto de click */
+}
+
+@media (hover: hover) {
+    .nav-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    }
+}
+
+/* =========================================
+   MEDIA QUERIES (RESPONSIVE PARA MÓVILES)
+   ========================================= */
+@media (max-width: 600px) {
+    
+    body {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+        margin-top: 40px; /* Espacio para el botón de tema que está absolute */
+    }
+
+    #themeToggle {
+        top: 15px;
+        right: 15px;
+    }
+
+    #flashcard {
+        height: 260px; /* Un poco más bajita en celular */
+    }
+
+    .card-face {
+        padding: 20px;
+        font-size: 1.1rem; /* Texto un poco más pequeño */
+    }
+
+    .nav-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+}
+/* =========================================
+   ESTILOS DEL LOGIN
+   ========================================= */
+
+/* Clase de utilidad para ocultar elementos */
+.hidden {
+    display: none !important;
+}
+
+/* El fondo del login que cubre toda la pantalla */
+#loginContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Asegura que esté encima de todo */
+    transition: background 0.3s;
+}
+
+.login-box {
+    background: var(--card-front);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    text-align: center;
+    width: 90%;
+    max-width: 350px;
+}
+
+.login-box h2 {
+    margin-top: 0;
+    color: var(--accent);
+}
+
+.login-box input {
+    width: 100%;
+    padding: 12px;
+    margin: 15px 0;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.3s;
+}
+
+.login-box input:focus {
+    border-color: var(--accent);
+}
+
+.login-box button {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.login-box button:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
